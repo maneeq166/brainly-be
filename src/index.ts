@@ -3,6 +3,7 @@ const app = express();
 import helmet from "helmet";
 import morgan from "morgan";
 import { connectDb } from "./Config/db.config";
+import authRouter from "./Routes/auth.route";
 
 //logs every stuff 
 const morganFormat = ':method :url :status :response-time ms';
@@ -16,10 +17,7 @@ app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
 
-app.get("/",(req,res)=>{
-  res.json({message:"hello"})
-})
-
+app.use("/api/v1/auth",authRouter);
 
 const port = 3000;
 async function connection() {
