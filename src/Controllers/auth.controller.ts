@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import { Schema, z } from "zod";
 import { Request, Response } from "express";
 import { User } from "../Models/User.Model";
+import jwt from "jsonwebtoken";
 
 const safeBody = z.object({
   username: z
@@ -19,7 +20,7 @@ export const signup = async (req: Request, res: Response) => {
   const result = safeBody.safeParse(req.body);
 
   if (!result.success) {
-    return res
+     res
       .status(400)
       .json({ message: "input info correctly", success: false });
   } else {
@@ -29,7 +30,7 @@ export const signup = async (req: Request, res: Response) => {
       const userExistsAlready = await User.findOne({ username, email });
 
       if (userExistsAlready) {
-        return res.status(400).json({ message: "Something went wrong" });
+         res.status(400).json({ message: "Something went wrong" });
       } else {
         const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -41,7 +42,7 @@ export const signup = async (req: Request, res: Response) => {
           });
 
           if (user) {
-            return res
+             res
               .status(200)
               .json({ message: "Signed up", success: true });
           }
@@ -49,9 +50,75 @@ export const signup = async (req: Request, res: Response) => {
       }
     } catch (error) {
       console.log(error);
-      return res
+       res
         .status(500)
         .json({ message: "Internal Server Error", success: false });
     }
   }
 };
+
+export const signin = async (req: Request, res: Response) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+       res
+        .status(400)
+        .json({ message: "input fields can't be empty", success: false });
+    }
+
+    const userExists = await User.findOne({ username });
+
+    if (!userExists) {
+       res
+        .status(400)
+        .json({ message: "Something went wrong", success: false });
+    } else {
+      const comparePassword = await bcrypt.compare(
+        password,
+        userExists.password
+      );
+
+      if (!comparePassword) {
+         res
+          .status(400)
+          .json({ message: "Something went wrong", success: false });
+      } else {
+        const token = jwt.sign(
+          { id: userExists._id },
+          String(process.env.JWT_SECRET as string)
+        );
+        res.json({ token, message: "Signed in", success: true });
+      }
+    }
+  } catch (error) {
+    console.log(error);
+     res
+      .status(500)
+      .json({ message: "Internal Server Error", success: false });
+  }
+};
+
+export const getProfile = async (req:Request,res:Response) =>{
+  try {
+    const userId = req.userId;
+
+    if(!userId){
+       res.status(400).json({message:"Something went wrong",success:false})
+    }
+
+    const user = await User.findOne({_id:userId}).select(" -password");
+
+    if(!user){
+       res.status(404).json({message:"Something went wrong",success:false})
+    }
+
+     res.status(200).json({user});
+
+
+  } catch (error) {
+     res
+        .status(500)
+        .json({ message: "Internal Server Error", success: false });
+  }
+}

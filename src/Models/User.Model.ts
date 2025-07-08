@@ -11,6 +11,7 @@ const UserSchema = new mongoose.Schema({
         required:[true,"Password should be 8 characters long"],
         minlength:8
     },
+    email:String
     
 },{timestamps:true})
 

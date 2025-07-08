@@ -16,5 +16,6 @@ const UserSchema = new mongoose_1.default.Schema({
         required: [true, "Password should be 8 characters long"],
         minlength: 8
     },
+    email: String
 }, { timestamps: true });
 exports.User = mongoose_1.default.model("user", UserSchema);

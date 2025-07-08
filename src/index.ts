@@ -1,9 +1,13 @@
-import express from "express";
+import express, { NextFunction, Request, Response } from "express";
 const app = express();
 import helmet from "helmet";
 import morgan from "morgan";
 import { connectDb } from "./Config/db.config";
 import authRouter from "./Routes/auth.route";
+import 'dotenv/config'
+import { configDotenv } from "dotenv";
+
+configDotenv();
 
 //logs every stuff 
 const morganFormat = ':method :url :status :response-time ms';
@@ -37,4 +41,6 @@ async function connection() {
 connection();
 
 
-
+app.use((req:Request,res:Response,next:NextFunction)=>{
+  res.status(404).json({message:"No route Found"})
+})

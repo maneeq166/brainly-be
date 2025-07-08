@@ -17,6 +17,10 @@ const app = (0, express_1.default)();
 const helmet_1 = __importDefault(require("helmet"));
 const morgan_1 = __importDefault(require("morgan"));
 const db_config_1 = require("./Config/db.config");
+const auth_route_1 = __importDefault(require("./Routes/auth.route"));
+require("dotenv/config");
+const dotenv_1 = require("dotenv");
+(0, dotenv_1.configDotenv)();
 //logs every stuff 
 const morganFormat = ':method :url :status :response-time ms';
 app.use((0, morgan_1.default)(morganFormat));
@@ -24,9 +28,7 @@ app.use((0, morgan_1.default)(morganFormat));
 app.use((0, helmet_1.default)());
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
-app.get("/", (req, res) => {
-    res.json({ message: "hello" });
-});
+app.use("/api/v1/auth", auth_route_1.default);
 const port = 3000;
 function connection() {
     return __awaiter(this, void 0, void 0, function* () {
@@ -43,3 +45,6 @@ function connection() {
     });
 }
 connection();
+app.use((req, res, next) => {
+    res.status(404).json({ message: "No route Found" });
+});
